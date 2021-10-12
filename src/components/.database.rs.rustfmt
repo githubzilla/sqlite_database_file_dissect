@@ -1,0 +1,161 @@
+use crate::components::file_manager::FileManager;
+use std::convert::From;
+
+#[derive(Debug)]
+pub enum FileFormatVersion {
+    Legacy = 1,
+    WAL = 2,
+}
+
+#[derive(Debug)]
+pub enum SchemaFormatNumber {
+    One = 1,
+    Two = 2,
+    Three = 3,
+    Four = 4,
+}
+
+#[derive(Debug)]
+pub enum TextEncoding {
+    UTF8 = 1,
+    UTF16le = 2,
+    UTF16be = 3,
+}
+
+#[derive(Debug)]
+pub struct DatabaseHeader {
+    header_string: [u8; 16],
+    page_size: u16,
+    file_format_read_version: FileFormatVersion,
+    file_format_write_version: FileFormatVersion,
+    bytes_at_unused_page_end: u8,
+    max_embedded_payload_fraction: u8,
+    min_embedded_payload_fraction: u8,
+    leaf_payload_fraction: u8,
+    file_change_count: u32,
+    in_header_database_size: u32,
+    first_freelist_trunk_page_number: u32,
+    total_freelist_page_number: u32,
+    schema_cookie: u32,
+    schema_format_number: SchemaFormatNumber,
+    default_page_cache_size: u32,
+    largest_root_btree_page_number: u32,
+    text_encoding: TextEncoding,
+    user_version: u32,
+    incremental_vacuum_mode: u8,
+    application_id: u32,
+    reserved: [u8; 20],
+    version_valid_for_number: u32,
+    sqlite_version_number: u32,
+}
+
+/**
+* implement of DatabaseHeader
+*/
+const SQLITE_DB_HEADER_STRING: &'static [u8; 16] = b"SQLite format 3\0";
+
+impl Default for DatabaseHeader {
+   fn default() -> Self { 
+        DatabaseHeader {
+            header_string: *SQLITE_DB_HEADER_STRING,
+            page_size: 0,
+            file_format_read_version: FileFormatVersion::Legacy,
+            file_format_write_version: FileFormatVersion::Legacy,
+            bytes_at_unused_page_end: 0,
+            max_embedded_payload_fraction: 64,
+            min_embedded_payload_fraction: 32,
+            leaf_payload_fraction: 32,
+            file_change_count: 0,
+            in_header_database_size: 0,
+            first_freelist_trunk_page_number: 0,
+            total_freelist_page_number: 0,
+            schema_cookie: 21,
+            schema_format_number: SchemaFormatNumber::One,
+            default_page_cache_size: 0,
+            largest_root_btree_page_number: 0,
+            text_encoding: TextEncoding::UTF8,
+            user_version: 0,
+            incremental_vacuum_mode: 0,
+            application_id: 0,
+            reserved: Default::default(),
+            version_valid_for_number: 0,
+            sqlite_version_number: 0, 
+        } 
+    }
+}
+
+impl From<Vec<u8>> for DatabaseHeader {
+    fn from(bytes: Vec<u8>) -> Self {
+        let header_string = match std::str::from_utf8(&bytes[0..15]) {
+            Ok(v) => v,
+            Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
+        };
+        let mut page_size_u8_2: [u8; 2] = [0, 0];
+        page_size_u8_2.copy_from_slice(&bytes[16..18]);
+        let page_size = u16::from_be_bytes(page_size_u8_2);
+        let mut db_header = DatabaseHeader{
+           page_size,
+           ..Default::default()
+        };
+        db_header
+    }
+}
+
+pub struct Database {
+    fm: FileManager,
+    header: DatabaseHeader,
+    freelist: Vec<()>,
+    pages: Vec<()>, 
+}
+
+pub enum PageType {
+    InteriorIndexBtreePage = 0x02,
+    InteriorTableBtreePage = 0x05,
+    LeafIndexBtreePage = 0x0a,
+    LeafTableBtreePage = 0x0d,
+} 
+
+pub struct PageHeader {
+    page_type: u8,
+    first_free_block_offset: u16,
+    cell_number: u16,
+    cell_content_area_offset: u16,
+    fragmented_free_bytes: u8,
+    right_most_pointer: u32,
+}
+
+pub struct Page {
+    header: PageHeader,
+    cell_pointers: Vec<CellPointer>,
+    cells: Vec<Cell>,
+
+}
+
+pub struct CellPointer {
+    pointer: u16,
+}
+
+pub struct Cell {
+    left_child_page_number: u32,
+    payload_length: u64,
+    rowid: u64,
+    payload: Vec<u8>,
+    overflow_page_number: u32,
+
+
+}
+
+/**
+* implement of Database
+*/
+
+impl Database {
+    //pub fn new(file_manager: &FileManager) -> Self{
+
+        //let mut db: Database = Database { fm: file_manager, header: (), freelist: (), pages: () };
+
+        //let database_header_bytes = file_manager.read(0, 100);
+
+    //}
+}
+
