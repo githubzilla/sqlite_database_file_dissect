@@ -12,3 +12,11 @@ hex = "0.4.3"
 num = "0.4"
 num-traits = "0.2"
 num-derive = "0.3"
+
+[profile.dev]
+opt-level = 0
+debug = true
+rpath = false
+lto = false
+debug-assertions = true
+codegen-units = 1

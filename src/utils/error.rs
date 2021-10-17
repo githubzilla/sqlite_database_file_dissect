@@ -3,7 +3,9 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum ErrorKind {
+    OddLength(usize/*odd length*/),
     SliceLengthError(usize/*expected_length*/, usize/*actual_length*/),
+    UnknowPageType(u8/*the page type found*/),
 }
 
 #[derive(Debug)]
@@ -14,8 +16,10 @@ pub struct MyError {
 impl fmt::Display for MyError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let result = match self.error_kind {
+            ErrorKind::OddLength(odd_length) => write!(f, "The slice length should not be odd {}", odd_length),
             ErrorKind::SliceLengthError(expected_length, actual_length) => write!(f, "The length of slice is not correct! The expected length is {}, but the actual length is {}", expected_length, actual_length),
-            _ => write!(f, "Error in MyError, Unknow error kind!")
+            ErrorKind::UnknowPageType(actual_page_type) => write!(f, "The page type {} doesn't exist.", actual_page_type),
+            _ => write!(f, "Error in MyError, Unknow error kind!"),
         }; 
         result
     }
