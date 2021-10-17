@@ -1,8 +1,8 @@
-use std::convert::TryFrom;
-
 use crate::components::page_header::PageHeader;
 use crate::components::cell_pointer::CellPointer;
 use crate::utils::error::MyError;
+use crate::utils::error::ErrorKind;
+use crate::utils::convert::TryFromBytes;
 
 pub struct Page {
     header: PageHeader,
@@ -10,12 +10,13 @@ pub struct Page {
     //cells: Vec<()>,
 }
 
-impl TryFrom<&[u8]> for Page {
-    type Error = MyError;
+impl TryFromBytes for Page {
+    fn try_from_le_bytes(bytes: &[u8]) -> Result<Self, MyError> {
+        Err(MyError::new(ErrorKind::NotImplemented))
+    }
+    fn try_from_be_bytes(bytes: &[u8]) -> Result<Self, MyError> {
 
-    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-
-        let header = PageHeader::try_from(value).unwrap();
+        let header = PageHeader::try_from_be_bytes(bytes).unwrap();
         //cell cell_pointers
         let cell_pointers : Vec<CellPointer> = Vec::new();
 

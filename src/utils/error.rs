@@ -6,6 +6,7 @@ pub enum ErrorKind {
     OddLength(usize/*odd length*/),
     SliceLengthError(usize/*expected_length*/, usize/*actual_length*/),
     UnknowPageType(u8/*the page type found*/),
+    NotImplemented,
 }
 
 #[derive(Debug)]
@@ -19,6 +20,7 @@ impl fmt::Display for MyError {
             ErrorKind::OddLength(odd_length) => write!(f, "The slice length should not be odd {}", odd_length),
             ErrorKind::SliceLengthError(expected_length, actual_length) => write!(f, "The length of slice is not correct! The expected length is {}, but the actual length is {}", expected_length, actual_length),
             ErrorKind::UnknowPageType(actual_page_type) => write!(f, "The page type {} doesn't exist.", actual_page_type),
+            ErrorKind::NotImplemented => write!(f, "Function not implemented."),
             _ => write!(f, "Error in MyError, Unknow error kind!"),
         }; 
         result

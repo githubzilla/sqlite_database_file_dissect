@@ -4,9 +4,11 @@ use crate::utils::error::MyError;
 use crate::utils::error::ErrorKind;
 use crate::utils::convert::TryFromBytes;
 
+use std::convert::TryFrom;
+
 #[derive(Debug)]
 pub struct CellPointer {
-    offset: u16,
+    pub offset: u16,
 }
 
 impl TryFromBytes for CellPointer {
@@ -31,5 +33,13 @@ impl TryFromBytes for CellPointer {
                 offset: u16::try_from_be_bytes(bytes).unwrap(),
             }
         )
+    }
+}
+
+impl TryFrom<&[u8]> for CellPointer {
+    type Error = MyError;
+
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+        CellPointer::try_from_be_bytes(value)
     }
 }

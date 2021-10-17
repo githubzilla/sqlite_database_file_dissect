@@ -4,6 +4,7 @@ use num_derive::FromPrimitive;
 use num_derive::ToPrimitive;
 
 use crate::utils::error::MyError;
+use crate::utils::error::ErrorKind;
 use crate::utils::convert::TryFromBytes;
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
@@ -29,35 +30,35 @@ pub enum TextEncoding {
 
 #[derive(Debug)]
 pub struct DatabaseHeader {
-    header_string: String,
-    page_size: u16,
-    file_format_read_version: FileFormatVersion,
-    file_format_write_version: FileFormatVersion,
-    bytes_at_unused_page_end: u8,
-    max_embedded_payload_fraction: u8,
-    min_embedded_payload_fraction: u8,
-    leaf_payload_fraction: u8,
-    file_change_count: u32,
-    in_header_database_size: u32,
-    first_freelist_trunk_page_number: u32,
-    total_freelist_page_number: u32,
-    schema_cookie: u32,
-    schema_format_number: SchemaFormatNumber,
-    default_page_cache_size: u32,
-    largest_root_btree_page_number: u32,
-    text_encoding: TextEncoding,
-    user_version: u32,
-    incremental_vacuum_mode: u32,
-    application_id: u32,
-    reserved: [u8; 20],
-    version_valid_for_number: u32,
-    sqlite_version_number: u32,
+    pub header_string: String,
+    pub page_size: u16,
+    pub file_format_read_version: FileFormatVersion,
+    pub file_format_write_version: FileFormatVersion,
+    pub bytes_at_unused_page_end: u8,
+    pub max_embedded_payload_fraction: u8,
+    pub min_embedded_payload_fraction: u8,
+    pub leaf_payload_fraction: u8,
+    pub file_change_count: u32,
+    pub in_header_database_size: u32,
+    pub first_freelist_trunk_page_number: u32,
+    pub total_freelist_page_number: u32,
+    pub schema_cookie: u32,
+    pub schema_format_number: SchemaFormatNumber,
+    pub default_page_cache_size: u32,
+    pub largest_root_btree_page_number: u32,
+    pub text_encoding: TextEncoding,
+    pub user_version: u32,
+    pub incremental_vacuum_mode: u32,
+    pub application_id: u32,
+    pub reserved: [u8; 20],
+    pub version_valid_for_number: u32,
+    pub sqlite_version_number: u32,
 }
 
 /**
 * implement of DatabaseHeader
 */
-const SQLITE_DB_HEADER_STRING: &'static str = "SQLite format 3\0";
+pub const SQLITE_DB_HEADER_STRING: &'static str = "SQLite format 3\0";
 
 impl Default for DatabaseHeader {
    fn default() -> Self { 
@@ -89,10 +90,13 @@ impl Default for DatabaseHeader {
     }
 }
 
-impl TryFrom<&[u8; 100]> for DatabaseHeader {
-    type Error= MyError;
+impl TryFromBytes for DatabaseHeader {
 
-    fn try_from(bytes: &[u8; 100]) -> Result<Self, Self::Error> {
+    fn try_from_le_bytes(bytes: &[u8]) -> Result<Self, MyError> {
+        Err(MyError::new(ErrorKind::NotImplemented))
+    }
+
+    fn try_from_be_bytes(bytes: &[u8]) -> Result<Self, MyError> {
         //header_string
         let header_string = String::from_utf8_lossy(&bytes[0..=15]);
         //page_size

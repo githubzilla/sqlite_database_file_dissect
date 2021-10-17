@@ -1,5 +1,3 @@
-
-use std::convert::TryFrom;
 use std::convert::TryInto;
 use std::result::Result;
 use std::mem;
@@ -37,10 +35,6 @@ impl_try_from_bytes!(u16, u32);
 impl<T: TryFromBytes> TryFromBytes for Vec<T>
 { 
     fn try_from_le_bytes(slice: &[u8]) -> Result<Self, MyError> {
-       if slice.len() % Self::SIZE_IN_BYTE != 0 {
-           return Err(MyError::new(ErrorKind::OddLength(slice.len())));
-       }
-
        let result = (0..slice.len())
                        .step_by(T::SIZE_IN_BYTE )
                        .map(|i| T::try_from_le_bytes(&slice[i..i + T::SIZE_IN_BYTE]).unwrap())
@@ -49,10 +43,6 @@ impl<T: TryFromBytes> TryFromBytes for Vec<T>
     }
 
     fn try_from_be_bytes(slice: &[u8]) -> Result<Self, MyError> {
-       if slice.len() % Self::SIZE_IN_BYTE != 0 {
-           return Err(MyError::new(ErrorKind::OddLength(slice.len())));
-       }
-
        let result = (0..slice.len())
                        .step_by(T::SIZE_IN_BYTE )
                        .map(|i| T::try_from_be_bytes(&slice[i..i + T::SIZE_IN_BYTE]).unwrap())
