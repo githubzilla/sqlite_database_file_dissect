@@ -11,10 +11,10 @@ use crate::utils::convert::TryFromBytes;
 #[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum PageType {
     UnknowType = 0x00,
-    InteriorIndexBtreePage = 0x02,
-    InteriorTableBtreePage = 0x05,
-    LeafIndexBtreePage = 0x0a,
-    LeafTableBtreePage = 0x0d,
+    IndexInteriorBtreePage = 0x02,
+    IndexLeafBtreePage = 0x0a,
+    TableInteriorBtreePage = 0x05,
+    TableLeafBtreePage = 0x0d,
 } 
 
 #[derive(Debug)]
@@ -85,9 +85,9 @@ impl TryFromBytes for PageHeader {
 
         //page header
         let page_header = match page_type {
-            PageType::InteriorIndexBtreePage | PageType::InteriorTableBtreePage => 
+            PageType::IndexInteriorBtreePage | PageType::TableInteriorBtreePage => 
                 try_from_be_12_bytes(<&[u8; 12]>::try_from(&bytes[0..12]).unwrap()),
-            PageType::LeafIndexBtreePage | PageType::LeafTableBtreePage => 
+            PageType::IndexLeafBtreePage | PageType::TableLeafBtreePage => 
                 try_from_be_8_bytes(<&[u8; 8]>::try_from(&bytes[0..8]).unwrap()),
             PageType::UnknowType => return Err(MyError::new(ErrorKind::UnknowPageType(bytes[0]))),
         };
@@ -99,10 +99,10 @@ impl TryFromBytes for PageHeader {
 impl PageHeader {
     pub fn detect_page_type(value: u8) -> PageType {
         match value {
-            2  => PageType::InteriorIndexBtreePage,
-            5  => PageType::InteriorTableBtreePage,
-            10 => PageType::LeafIndexBtreePage,
-            13 => PageType::LeafTableBtreePage,
+            2  => PageType::IndexInteriorBtreePage,
+            5  => PageType::TableInteriorBtreePage,
+            10 => PageType::IndexLeafBtreePage,
+            13 => PageType::TableLeafBtreePage,
             _  => PageType::UnknowType,
         }
     }

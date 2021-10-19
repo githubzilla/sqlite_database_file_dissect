@@ -7,6 +7,8 @@ pub enum ErrorKind {
     SliceLengthError(usize/*expected_length*/, usize/*actual_length*/),
     UnknowPageType(u8/*the page type found*/),
     NotImplemented,
+    InvalidVarInt,
+    UnreachableCode,
 }
 
 #[derive(Debug)]
@@ -21,6 +23,8 @@ impl fmt::Display for MyError {
             ErrorKind::SliceLengthError(expected_length, actual_length) => write!(f, "The length of slice is not correct! The expected length is {}, but the actual length is {}", expected_length, actual_length),
             ErrorKind::UnknowPageType(actual_page_type) => write!(f, "The page type {} doesn't exist.", actual_page_type),
             ErrorKind::NotImplemented => write!(f, "Function not implemented."),
+            ErrorKind::InvalidVarInt => write!(f, "Invalid Variable-Length Integer."),
+            ErrorKind::UnreachableCode => write!(f, "Unreachable code."),
             _ => write!(f, "Error in MyError, Unknow error kind!"),
         }; 
         result

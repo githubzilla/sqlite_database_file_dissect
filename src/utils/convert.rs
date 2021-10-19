@@ -30,7 +30,7 @@ macro_rules! impl_try_from_bytes {
     }
 }
 
-impl_try_from_bytes!(u16, u32);
+impl_try_from_bytes!(u16, u32, usize);
 
 impl<T: TryFromBytes> TryFromBytes for Vec<T>
 { 

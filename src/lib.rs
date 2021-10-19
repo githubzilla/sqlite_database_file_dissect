@@ -1,5 +1,4 @@
-#![feature(generic_const_exprs)]
-#![feature(associated_type_defaults)]
+#![feature(destructuring_assignment)]
 
 pub mod components;
 pub mod utils;

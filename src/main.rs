@@ -1,4 +1,4 @@
-#![feature(generic_const_exprs)]
+#![feature(destructuring_assignment)]
 
 mod components;
 mod utils;

@@ -1,13 +1,11 @@
 #[cfg(test)]
 mod tests {
-
-    use std::convert::TryFrom;
-
     use hex;
 
     use sqlite_database_file_dissect::components::page_header::PageHeader;
     use sqlite_database_file_dissect::components::page_header::PageType;
     use sqlite_database_file_dissect::components::cell_pointer::CellPointer;
+    use sqlite_database_file_dissect::components::cell::Cell;
     use sqlite_database_file_dissect::utils::convert::TryFromBytes;
 
     #[test]
@@ -16,7 +14,7 @@ mod tests {
         let mut page_header_12: [u8; 12] = [0; 12];
         let _ = hex::decode_to_slice(BINARY_AS_STR_12, &mut page_header_12).unwrap();
         let page_type = PageHeader::detect_page_type(page_header_12[0]);
-        assert!(page_type == PageType::InteriorTableBtreePage);
+        assert!(page_type == PageType::TableInteriorBtreePage);
         let page_header = PageHeader::try_from_be_bytes(&page_header_12).unwrap();
         println!("{:?}", page_header);
         assert!(page_header.first_free_block_offset == 0);
@@ -33,7 +31,7 @@ mod tests {
         let _ = hex::decode_to_slice(BINARY_AS_STR_8, &mut page_header_8).unwrap();
         let page_type = PageHeader::detect_page_type(page_header_8[0]);
         println!("{:?}", page_type);
-        assert!(page_type == PageType::LeafIndexBtreePage);
+        assert!(page_type == PageType::IndexLeafBtreePage);
         let page_header = PageHeader::try_from_be_bytes(&page_header_8).unwrap();
         println!("{:?}", page_header);
         assert!(page_header.first_free_block_offset == 2616);
@@ -51,6 +49,16 @@ mod tests {
         let cell_pointers = <Vec<CellPointer>>::try_from_be_bytes(&cell_pointers_738).unwrap();
         println!("{:?}", cell_pointers);
         assert_eq!(cell_pointers.len(), 369);
+        //assert!(false);
+    }
 
+    #[test]
+    fn test_cell(){
+        const BINARY_AS_STR_8: &str="070302020714062C";
+        let mut cell_8: [u8; 8] =[0; 8];
+        let _ = hex::decode_to_slice(BINARY_AS_STR_8, &mut cell_8);
+        let cell = Cell::try_from_bytes(&cell_8, PageType::IndexLeafBtreePage, 4096);
+        println!("{:?}", cell);
+        assert!(false);
     }
 }
