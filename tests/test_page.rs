@@ -1,11 +1,15 @@
 #[cfg(test)]
 mod tests {
+    use std::io::prelude::*;
+    use std::fs::File;
+
     use hex;
 
     use sqlite_database_file_dissect::components::page_header::PageHeader;
     use sqlite_database_file_dissect::components::page_header::PageType;
     use sqlite_database_file_dissect::components::cell_pointer::CellPointer;
     use sqlite_database_file_dissect::components::cell::Cell;
+    use sqlite_database_file_dissect::components::page::Page;
     use sqlite_database_file_dissect::utils::convert::TryFromBytes;
 
     #[test]
@@ -60,5 +64,20 @@ mod tests {
         let cell = Cell::try_from_bytes(&cell_8, PageType::IndexLeafBtreePage, 4096);
         println!("{:?}", cell);
         assert!(false);
+    }
+
+    #[test]
+    fn test_page(){
+        let mut f = File::open("test-data/Chinbook.db.4.analyze.14").unwrap();
+        let mut buffer: [u8; 4096] = [0; 4096];
+        // read the whole file
+        let _r = f.read(&mut buffer);
+
+        let page = Page::try_from_be_bytes(&buffer, None).unwrap();
+        println!("{:?}", page);
+
+        assert!(false);
+
+        
     }
 }

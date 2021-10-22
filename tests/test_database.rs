@@ -1,8 +1,11 @@
 #[cfg(test)]
 mod tests {
+    use std::io::prelude::*;
+    use std::fs::File;
 
     use hex;
     use sqlite_database_file_dissect::components::database_header::DatabaseHeader;
+    use sqlite_database_file_dissect::components::page::Page;
     use sqlite_database_file_dissect::components::database_header::SQLITE_DB_HEADER_STRING;
     use sqlite_database_file_dissect::utils::convert::TryFromBytes;
 
@@ -17,5 +20,20 @@ mod tests {
         assert_eq!(database_header.page_size, 4096);
         assert_eq!(database_header.in_header_database_size, 224);
         assert_eq!(database_header.sqlite_version_number, 3037000);
+    }
+
+    #[test]
+    fn test_database_page1(){
+        let mut f = File::open("Chinbook.db.4.analyze.1").unwrap();
+        let mut buffer: [u8; 4096] = [0; 4096];
+        // read the whole file
+        let _r = f.read(&mut buffer);
+
+        let database_header = DatabaseHeader::try_from_be_bytes(&buffer[0..100]).unwrap();
+        println!("{:?}", database_header);
+        let page = Page::try_from_be_bytes(&buffer, Some(100)).unwrap();
+        println!("{:?}", page);
+        assert!(false);
+
     }
 }

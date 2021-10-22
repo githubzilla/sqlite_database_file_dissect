@@ -3,6 +3,8 @@
 mod components;
 mod utils;
 
+use crate::components::page;
+
 fn main() {
     println!("Hello, world!");
 }

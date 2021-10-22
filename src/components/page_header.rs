@@ -8,7 +8,7 @@ use crate::utils::error::MyError;
 use crate::utils::error::ErrorKind;
 use crate::utils::convert::TryFromBytes;
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive, Clone, Copy)]
 pub enum PageType {
     UnknowType = 0x00,
     IndexInteriorBtreePage = 0x02,
@@ -25,6 +25,7 @@ pub struct PageHeader {
     pub cell_content_area_offset: u16,
     pub fragmented_free_bytes: u8,
     pub right_most_pointer: u32,
+    pub length: usize,
 }
 
 impl Default for PageHeader {
@@ -35,7 +36,8 @@ impl Default for PageHeader {
             cell_number: 0, 
             cell_content_area_offset: 0, 
             fragmented_free_bytes: 0, 
-            right_most_pointer: 0 
+            right_most_pointer: 0,
+            length: 0,
         } 
     }
 }
@@ -61,6 +63,7 @@ impl Default for PageHeader {
          cell_content_area_offset,
          fragmented_free_bytes,
          right_most_pointer,
+         length: 8,
      })
  }
 
@@ -71,6 +74,7 @@ impl Default for PageHeader {
      //right_most_pointer
      let right_most_pointer = u32::try_from_be_bytes(&value[8..=11]).unwrap();
      page_header.right_most_pointer = right_most_pointer;
+     page_header.length = 12;
      Ok(page_header)
  }
 

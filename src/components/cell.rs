@@ -51,11 +51,11 @@ impl Cell {
     }
 
     fn get_left_child_page_number(bytes: &[u8]) -> u32 {
-        u32::try_from_be_bytes(&bytes[0..=3]).unwrap()
+        u32::try_from_be_bytes(&bytes[0..4]).unwrap()
     }
 
     fn get_row_id(bytes: &[u8]) -> (usize, usize) {
-       usize::decode_var(&bytes[4..]).unwrap()
+       usize::decode_var(&bytes).unwrap()
     }
 
     fn get_payload_length(bytes: &[u8]) -> (usize, usize) {
@@ -76,11 +76,11 @@ impl Cell {
 
             if p > x && k <= x {
                 let k: usize = m+((p-m)%(u-4));
-                let overflow_page_number =  Self::get_overflow_page_number(&bytes[(k-1)..]);
-                return (Some(&bytes[0..k]), Some(overflow_page_number), Some(p -k)); 
+                let overflow_page_number =  Self::get_overflow_page_number(&bytes[k..]);
+                return (Some(&bytes[0..k]), Some(overflow_page_number), Some(p - k)); 
             } else if p > x && k > x {
-                let overflow_page_number =  Self::get_overflow_page_number(&bytes[(m-1)..]);
-                return (Some(&bytes[0..m]), Some(overflow_page_number), Some(p -m)); 
+                let overflow_page_number =  Self::get_overflow_page_number(&bytes[m..]);
+                return (Some(&bytes[0..m]), Some(overflow_page_number), Some(p - m)); 
             }
         } 
 
@@ -92,8 +92,8 @@ impl Cell {
     } 
 
     fn build_table_interior_page_cell(bytes: &[u8]) -> Result<Cell, MyError> {
-        let left_child_page_number = Self::get_left_child_page_number(&bytes[0..=3]);
-        let (row_id, row_id_varint_len) = Self::get_row_id(&bytes[4..]);
+        let left_child_page_number = Self::get_left_child_page_number(&bytes[0..4]);
+        let (row_id, _row_id_varint_len) = Self::get_row_id(&bytes[4..]);
 
         Ok(Cell{
             page_type: PageType::TableInteriorBtreePage,
@@ -105,13 +105,13 @@ impl Cell {
 
     fn build_table_leaf_page_cell(bytes: &[u8], page_size: usize) -> Result<Cell, MyError> {
         let (payload_length, payload_length_varint_len) = Self::get_payload_length(&bytes);
-        let (row_id, row_id_varint_len) = Self::get_row_id(&bytes[payload_length_varint_len -1..]);
+        let (row_id, row_id_varint_len) = Self::get_row_id(&bytes[payload_length_varint_len..]);
 
         let u = page_size;
         let x = u -35;
-        let payload_start_index = payload_length_varint_len +row_id_varint_len;
+        let payload_start_index = payload_length_varint_len + row_id_varint_len;
         let (payload, overflow_page_number, overflow_length) = 
-        Self::get_payload(&bytes[payload_start_index-1..], payload_length, page_size, x);
+        Self::get_payload(&bytes[payload_start_index..], payload_length, page_size, x);
 
         Ok(Cell{
             page_type: PageType::TableLeafBtreePage,
@@ -125,11 +125,11 @@ impl Cell {
     }
 
     fn build_index_interior_page_cell(bytes: &[u8], page_size: usize) -> Result<Cell, MyError> {
-        let left_child_page_number = Self::get_left_child_page_number(&bytes);
+        let left_child_page_number = Self::get_left_child_page_number(&bytes[0..4]);
         let (payload_length, payload_length_varint_len) = Self::get_payload_length(&bytes[4..]);
         let u = page_size;
         let x = ((u-12)*64/255)-23;
-        let payload_start_index = 4 + payload_length_varint_len -1;
+        let payload_start_index = 4 + payload_length_varint_len;
         let (payload, overflow_page_number, overflow_length) = Self::get_payload(&bytes[payload_start_index..], payload_length, page_size, x);
 
         Ok(Cell{
@@ -147,7 +147,7 @@ impl Cell {
         let (payload_length, payload_length_varint_len) = Self::get_payload_length(&bytes);
         let u = page_size;
         let x = ((u-12)*64/255)-23;
-        let payload_start_index = payload_length_varint_len -1;
+        let payload_start_index = payload_length_varint_len;
         let (payload, overflow_page_number, overflow_length) = Self::get_payload(&bytes[payload_start_index..], payload_length, page_size, x);
 
         Ok(Cell{
