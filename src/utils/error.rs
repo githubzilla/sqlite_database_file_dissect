@@ -25,7 +25,6 @@ impl fmt::Display for MyError {
             ErrorKind::NotImplemented => write!(f, "Function not implemented."),
             ErrorKind::InvalidVarInt => write!(f, "Invalid Variable-Length Integer."),
             ErrorKind::UnreachableCode => write!(f, "Unreachable code."),
-            _ => write!(f, "Error in MyError, Unknow error kind!"),
         }; 
         result
     }

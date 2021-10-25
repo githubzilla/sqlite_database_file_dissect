@@ -22,18 +22,4 @@ mod tests {
         assert_eq!(database_header.sqlite_version_number, 3037000);
     }
 
-    #[test]
-    fn test_database_page1(){
-        let mut f = File::open("Chinbook.db.4.analyze.1").unwrap();
-        let mut buffer: [u8; 4096] = [0; 4096];
-        // read the whole file
-        let _r = f.read(&mut buffer);
-
-        let database_header = DatabaseHeader::try_from_be_bytes(&buffer[0..100]).unwrap();
-        println!("{:?}", database_header);
-        let page = Page::try_from_be_bytes(&buffer, Some(100)).unwrap();
-        println!("{:?}", page);
-        assert!(false);
-
-    }
 }

@@ -30,7 +30,7 @@ impl FileManager {
 
     }
 
-    pub fn read(&self, offset: usize, length: usize) -> Vec<u8> {
+    pub fn read(&self, _offset: usize, length: usize) -> Vec<u8> {
 
         vec![]
     }

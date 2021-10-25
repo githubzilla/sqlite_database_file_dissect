@@ -1,9 +1,9 @@
-use integer_encoding::*;
-
 use crate::components::page_header::PageType;
+use crate::components::record::Record;
 use crate::utils::convert::TryFromBytes;
 use crate::utils::error::MyError;
 use crate::utils::error::ErrorKind;
+use crate::utils::varint::decode_varint_to_usize;
 
 #[derive(Debug)]
 pub struct Cell {
@@ -11,7 +11,7 @@ pub struct Cell {
     pub left_child_page_number: Option<u32>,
     pub row_id: Option<usize>,
     pub payload_length: Option<usize>,
-    pub payload: Option<Vec<u8>>,
+    pub payload: Option<Record>,
     pub overflow_page_number: Option<u32>,
     pub overflow_length: Option<usize>,
 }
@@ -54,14 +54,6 @@ impl Cell {
         u32::try_from_be_bytes(&bytes[0..4]).unwrap()
     }
 
-    fn get_row_id(bytes: &[u8]) -> (usize, usize) {
-       usize::decode_var(&bytes).unwrap()
-    }
-
-    fn get_payload_length(bytes: &[u8]) -> (usize, usize) {
-       usize::decode_var(&bytes[4..]).unwrap()
-    }
-
     fn get_payload(bytes: &[u8], payload_length: usize, page_size: usize, x: usize) -> (Option<&[u8]>/*payload*/, 
                                                                                         Option<u32>/*overflow_page_number*/, 
                                                                                         Option<usize>/*remaining page length in overflow page*/) {
@@ -69,7 +61,7 @@ impl Cell {
         let p: usize = payload_length;
 
         if p <= x {
-            return (Some(bytes), None, None);
+            return (Some(&bytes[..payload_length]), None, None);
         } else {
             let m: usize = ((u-12)*32/255)-23;
             let k: usize = m+((p-m)%(u-4));
@@ -93,7 +85,7 @@ impl Cell {
 
     fn build_table_interior_page_cell(bytes: &[u8]) -> Result<Cell, MyError> {
         let left_child_page_number = Self::get_left_child_page_number(&bytes[0..4]);
-        let (row_id, _row_id_varint_len) = Self::get_row_id(&bytes[4..]);
+        let (row_id, _row_id_varint_len) = decode_varint_to_usize(&bytes[4..]).unwrap();
 
         Ok(Cell{
             page_type: PageType::TableInteriorBtreePage,
@@ -104,8 +96,8 @@ impl Cell {
     }
 
     fn build_table_leaf_page_cell(bytes: &[u8], page_size: usize) -> Result<Cell, MyError> {
-        let (payload_length, payload_length_varint_len) = Self::get_payload_length(&bytes);
-        let (row_id, row_id_varint_len) = Self::get_row_id(&bytes[payload_length_varint_len..]);
+        let (payload_length, payload_length_varint_len) = decode_varint_to_usize(&bytes).unwrap();
+        let (row_id, row_id_varint_len) = decode_varint_to_usize(&bytes[payload_length_varint_len..]).unwrap();
 
         let u = page_size;
         let x = u -35;
@@ -117,7 +109,11 @@ impl Cell {
             page_type: PageType::TableLeafBtreePage,
             payload_length: Some(payload_length),
             row_id: Some(row_id),
-            payload: match payload {Some(bytes) => Some(bytes.to_vec()), None => None, },
+            payload: match payload {
+                Some(b) => 
+                    Some(Record::try_from_be_bytes(&b).unwrap()), 
+                None => None, 
+            },
             overflow_page_number,
             overflow_length, 
             ..Default::default()
@@ -126,7 +122,7 @@ impl Cell {
 
     fn build_index_interior_page_cell(bytes: &[u8], page_size: usize) -> Result<Cell, MyError> {
         let left_child_page_number = Self::get_left_child_page_number(&bytes[0..4]);
-        let (payload_length, payload_length_varint_len) = Self::get_payload_length(&bytes[4..]);
+        let (payload_length, payload_length_varint_len) = decode_varint_to_usize(&bytes[4..]).unwrap();
         let u = page_size;
         let x = ((u-12)*64/255)-23;
         let payload_start_index = 4 + payload_length_varint_len;
@@ -136,7 +132,7 @@ impl Cell {
             page_type: PageType::IndexInteriorBtreePage,
             left_child_page_number: Some(left_child_page_number),
             payload_length: Some(payload_length),
-            payload: match payload {Some(bytes) => Some(bytes.to_vec()), None => None, },
+            payload: match payload {Some(bytes) => Some(Record::try_from_be_bytes(&bytes).unwrap()), None => None, },
             overflow_page_number,
             overflow_length,
             ..Default::default()
@@ -144,7 +140,7 @@ impl Cell {
     }
 
     fn build_index_leaf_page_cell(bytes: &[u8], page_size: usize) -> Result<Cell, MyError> {
-        let (payload_length, payload_length_varint_len) = Self::get_payload_length(&bytes);
+        let (payload_length, payload_length_varint_len) = decode_varint_to_usize(&bytes).unwrap();
         let u = page_size;
         let x = ((u-12)*64/255)-23;
         let payload_start_index = payload_length_varint_len;
@@ -153,7 +149,7 @@ impl Cell {
         Ok(Cell{
             page_type: PageType::IndexLeafBtreePage,
             payload_length: Some(payload_length),
-            payload: match payload {Some(bytes) => Some(bytes.to_vec()), None => None, },
+            payload: match payload {Some(bytes) => Some(Record::try_from_be_bytes(&bytes).unwrap()), None => None, },
             overflow_page_number,
             overflow_length,
             ..Default::default()

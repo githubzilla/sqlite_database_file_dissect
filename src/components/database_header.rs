@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use num_derive::FromPrimitive;
 use num_derive::ToPrimitive;
 
@@ -92,7 +90,7 @@ impl Default for DatabaseHeader {
 
 impl TryFromBytes for DatabaseHeader {
 
-    fn try_from_le_bytes(bytes: &[u8]) -> Result<Self, MyError> {
+    fn try_from_le_bytes(_bytes: &[u8]) -> Result<Self, MyError> {
         Err(MyError::new(ErrorKind::NotImplemented))
     }
 

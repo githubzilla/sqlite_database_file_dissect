@@ -44,7 +44,7 @@ impl Default for PageHeader {
 
  fn try_from_be_8_bytes(value: &[u8; 8]) -> Result<PageHeader, MyError> {
      //page_type
-     let page_type = num::FromPrimitive::from_u8(value[0]).unwrap();
+     let page_type: PageType = num::FromPrimitive::from_u8(value[0]).unwrap();
      //first_free_block_offset
      let first_free_block_offset = u16::try_from_be_bytes(&value[1..=2]).unwrap();
      //cell_number
@@ -80,7 +80,7 @@ impl Default for PageHeader {
 
 impl TryFromBytes for PageHeader {
 
-    fn try_from_le_bytes(bytes: &[u8]) -> Result<Self, MyError> {
+    fn try_from_le_bytes(_bytes: &[u8]) -> Result<Self, MyError> {
         Err(MyError::new(ErrorKind::NotImplemented))
     }
 

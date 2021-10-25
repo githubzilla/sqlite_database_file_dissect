@@ -151,7 +151,14 @@ dependencies = [
  "num",
  "num-derive",
  "num-traits",
+ "sqlite_varint",
 ]
+
+[[package]]
+name = "sqlite_varint"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6a284e70ebada8e02e2c01a21d6e4e39c3036a630ecaa2fbe80782414a8cffc"
 
 [[package]]
 name = "syn"

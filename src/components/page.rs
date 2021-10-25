@@ -2,7 +2,6 @@ use crate::components::page_header::PageHeader;
 use crate::components::cell_pointer::CellPointer;
 use crate::components::cell::Cell;
 use crate::utils::error::MyError;
-use crate::utils::error::ErrorKind;
 use crate::utils::convert::TryFromBytes;
 
 #[derive(Debug)]
@@ -31,6 +30,7 @@ impl Page {
                          )
                          .unwrap();
 
+
         //cells
         let cells: Vec<Cell> = cell_pointers
             .iter()
@@ -47,6 +47,3 @@ impl Page {
         })
     }
 }
-
-
-

@@ -5,6 +5,7 @@ mod tests {
 
     use hex;
 
+    use sqlite_database_file_dissect::components::database_header::DatabaseHeader;
     use sqlite_database_file_dissect::components::page_header::PageHeader;
     use sqlite_database_file_dissect::components::page_header::PageType;
     use sqlite_database_file_dissect::components::cell_pointer::CellPointer;
@@ -67,7 +68,7 @@ mod tests {
     }
 
     #[test]
-    fn test_page(){
+    fn test_page14(){
         let mut f = File::open("test-data/Chinbook.db.4.analyze.14").unwrap();
         let mut buffer: [u8; 4096] = [0; 4096];
         // read the whole file
@@ -77,7 +78,45 @@ mod tests {
         println!("{:?}", page);
 
         assert!(false);
+    }
+    
+    #[test]
+    fn test_page15(){
+        let mut f = File::open("test-data/Chinbook.db.4.analyze.15").unwrap();
+        let mut buffer: [u8; 4096] = [0; 4096];
+        // read the whole file
+        let _r = f.read(&mut buffer);
 
-        
+        let page = Page::try_from_be_bytes(&buffer, None).unwrap();
+        println!("{:?}", page);
+
+        assert!(false);
+    }
+    #[test]
+    fn test_page2(){
+        let mut f = File::open("test-data/Chinbook.db.4.analyze.2").unwrap();
+        let mut buffer: [u8; 4096] = [0; 4096];
+        // read the whole file
+        let _r = f.read(&mut buffer);
+
+        let page = Page::try_from_be_bytes(&buffer, None).unwrap();
+        println!("{:?}", page);
+
+        assert!(false);
+    }
+    
+    #[test]
+    fn test_page1(){
+        let mut f = File::open("test-data/Chinbook.db.4.analyze.1").unwrap();
+        let mut buffer: [u8; 4096] = [0; 4096];
+        // read the whole file
+        let _r = f.read(&mut buffer);
+
+        let database_header = DatabaseHeader::try_from_be_bytes(&buffer[0..100]).unwrap();
+        println!("{:?}", database_header);
+        let page = Page::try_from_be_bytes(&buffer, Some(100)).unwrap();
+        println!("{:?}", page);
+        assert!(false);
+
     }
 }
