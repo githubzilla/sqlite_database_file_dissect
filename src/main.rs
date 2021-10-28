@@ -3,8 +3,14 @@
 mod components;
 mod utils;
 
-use crate::components::page;
+use std::env;
+
+use sqlite_database_file_dissect::components::database_header::*;
+use sqlite_database_file_dissect::components::database::*;
+use sqlite_database_file_dissect::components::page_header::*;
+use sqlite_database_file_dissect::components::page::*;
 
 fn main() {
-    println!("Hello, world!");
+    let args: Vec<String> = env::args().collect();
+    println!("{:?}", args);
 }

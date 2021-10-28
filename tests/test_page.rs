@@ -81,8 +81,33 @@ mod tests {
     }
     
     #[test]
+    fn test_page13(){
+        let mut f = File::open("test-data/Chinbook.db.4.analyze.13").unwrap();
+        let mut buffer: [u8; 4096] = [0; 4096];
+        // read the whole file
+        let _r = f.read(&mut buffer);
+
+        let page = Page::try_from_be_bytes(&buffer, None).unwrap();
+        println!("{:?}", page);
+
+        assert!(false);
+    }
+
+    #[test]
     fn test_page15(){
         let mut f = File::open("test-data/Chinbook.db.4.analyze.15").unwrap();
+        let mut buffer: [u8; 4096] = [0; 4096];
+        // read the whole file
+        let _r = f.read(&mut buffer);
+
+        let page = Page::try_from_be_bytes(&buffer, None).unwrap();
+        println!("{:?}", page);
+
+        assert!(false);
+    }
+    #[test]
+    fn test_page(){
+        let mut f = File::open("test-data/Chinbook.db.4.analyze.2").unwrap();
         let mut buffer: [u8; 4096] = [0; 4096];
         // read the whole file
         let _r = f.read(&mut buffer);
@@ -106,7 +131,7 @@ mod tests {
     }
     
     #[test]
-    fn test_page1(){
+    fn test_page01(){
         let mut f = File::open("test-data/Chinbook.db.4.analyze.1").unwrap();
         let mut buffer: [u8; 4096] = [0; 4096];
         // read the whole file
