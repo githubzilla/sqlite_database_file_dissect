@@ -12,6 +12,7 @@ use actix_web::{get, web, App as WebApp, HttpResponse, HttpServer, Responder};
 use clap::{Arg, App as ClapApp};
 use serde_json::json;
 use lazy_static::*;
+use sqlite_database_file_dissect::components::database_header;
 use std::sync::Mutex;
 use std::sync::MutexGuard;
 
@@ -23,6 +24,7 @@ use sqlite_database_file_dissect::utils::error::HttpError;
 
 lazy_static!{
     static ref SQLITE_DATABASE_FILE: Mutex<Option<String>> = Mutex::new(None);
+    static ref SQLITE_DATABASE_FILE_PAGE_SIZE: Mutex<Option<usize>> = Mutex::new(None);
 }
 
 fn travel_btree_page(f: &mut File, 
@@ -95,11 +97,11 @@ fn travel_btree_page(f: &mut File,
 
 #[get("/btree_hierachy")]
 async fn btree_hierachy() -> impl Responder{
+    let page_size: usize = SQLITE_DATABASE_FILE_PAGE_SIZE.lock().unwrap().unwrap();
     let mut f = File::open(SQLITE_DATABASE_FILE.lock().unwrap().as_ref().unwrap()).unwrap();
-    const PAGE_SIZE: usize = 4096;
-    let mut buffer: [u8; PAGE_SIZE] = [0; PAGE_SIZE];
+    let mut buffer = vec![0 as u8; page_size];
     let f_length: usize = f.metadata().unwrap().len().try_into().unwrap();
-    let page_num: usize = f_length/PAGE_SIZE;
+    let page_num: usize = f_length/page_size;
     let mut page_parents: Vec<i32>  = Vec::with_capacity(page_num);
 
     for _ in 0..page_num {
@@ -114,7 +116,7 @@ async fn btree_hierachy() -> impl Responder{
         // read the page
         travel_btree_page(
             &mut f, 
-            PAGE_SIZE, 
+            page_size, 
             page_index, 
             &mut buffer, 
             &mut page_parents, 
@@ -129,10 +131,10 @@ async fn btree_hierachy() -> impl Responder{
 
 #[get("/btree_page_num")]
 async fn btree_page_num() -> impl Responder {
-    const PAGE_SIZE: usize = 4096;
+    let page_size: usize = SQLITE_DATABASE_FILE_PAGE_SIZE.lock().unwrap().unwrap();
     let f = File::open(SQLITE_DATABASE_FILE.lock().unwrap().as_ref().unwrap()).unwrap();
     let f_length: usize = f.metadata().unwrap().len().try_into().unwrap();
-    let page_num: usize = f_length/PAGE_SIZE;
+    let page_num: usize = f_length/page_size;
 
     let r = json!({
         "page_num": page_num
@@ -144,10 +146,10 @@ async fn btree_page_num() -> impl Responder {
 
 #[get("/btree_page/{page_index}")]
 async fn btree_page(web::Path(page_index): web::Path<usize>) -> impl Responder {
-    const PAGE_SIZE: usize = 4096;
+    let page_size: usize = SQLITE_DATABASE_FILE_PAGE_SIZE.lock().unwrap().unwrap();
     let mut f = File::open(SQLITE_DATABASE_FILE.lock().unwrap().as_ref().unwrap()).unwrap();
     let f_length: usize = f.metadata().unwrap().len().try_into().unwrap();
-    let page_num: usize = f_length/PAGE_SIZE;
+    let page_num: usize = f_length/page_size;
 
     if page_index <= 0 || page_index > page_num {
         let r = serde_json::to_string(
@@ -156,9 +158,9 @@ async fn btree_page(web::Path(page_index): web::Path<usize>) -> impl Responder {
         return HttpResponse::BadRequest().body(r);
     }
 
-    let mut buffer: [u8; PAGE_SIZE] = [0; PAGE_SIZE];
+    let mut buffer = vec![0 as u8; page_size];
 
-    let page_start_offset: u64 = (page_index * PAGE_SIZE).try_into().unwrap();
+    let page_start_offset: u64 = (page_index * page_size).try_into().unwrap();
     f.seek(SeekFrom::Start(page_start_offset)).unwrap();
     let _r = f.read(&mut buffer);
     let page_start_offset;
@@ -189,23 +191,28 @@ async fn main() -> std::io::Result<()>{
                          .value_name("FILE")
                          .help("sqlite database file name")
                          .required(true))
-                    .arg(Arg::with_name("page_size")
-                         .short("s")
-                         .long("page_size")
-                         .value_name("PAGE_SIZE")
-                         .help("sqlite database page size")
-                         .required(true))
                     .get_matches();
 
     {
-        let mut guard: MutexGuard<'_, Option<String>> = SQLITE_DATABASE_FILE.lock().unwrap();
-        *guard = Some(matches.value_of("file").unwrap().to_string());
+        let mut file_guard: MutexGuard<'_, Option<String>> = SQLITE_DATABASE_FILE.lock().unwrap();
+        *file_guard = Some(matches.value_of("file").unwrap().to_string());
+    }
+
+    let mut f = File::open(SQLITE_DATABASE_FILE.lock().unwrap().as_ref().unwrap()).unwrap();
+    let mut buffer = vec![0 as u8; 100];
+    let _r = f.read(&mut buffer);
+    let database_header = DatabaseHeader::try_from_be_bytes(&buffer[0..100]).unwrap();
+
+    {
+        let mut page_size_guard: MutexGuard<'_, Option<usize>> = SQLITE_DATABASE_FILE_PAGE_SIZE.lock().unwrap();
+        *page_size_guard = Some(database_header.page_size as usize);
     }
 
     HttpServer::new(|| {
         WebApp::new()
             .service(btree_hierachy)
             .service(btree_page)
+            .service(btree_page_num)
     })
     .bind("127.0.0.1:8080")?
     .run()
