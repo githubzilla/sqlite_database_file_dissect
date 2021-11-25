@@ -1,11 +1,13 @@
 use std::convert::TryInto;
 
+use serde_derive::Serialize;
+
 use crate::utils::convert::TryFromBytes;
 use crate::utils::error::MyError;
 use crate::utils::error::ErrorKind;
 use crate::utils::varint::decode_varint_to_usize;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum SerialType {
     UNKNOWN,
     NULL,
@@ -24,7 +26,7 @@ pub enum SerialType {
     STRING(usize /*string length*/),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum Column {
     UNKNOWN,
     NULL,
@@ -43,7 +45,7 @@ pub enum Column {
     STRING(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Record {
     pub header_length: usize,
     pub serial_types: Vec<SerialType>,

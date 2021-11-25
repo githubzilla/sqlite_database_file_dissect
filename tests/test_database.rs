@@ -52,7 +52,14 @@ mod tests {
 
         for cell_idx in 0..page.cells.len() {
             let cell = &page.cells[cell_idx];
-            print!("cell.left_child_page_number: {}, cell.row_id: {} | ", cell.left_child_page_number.unwrap_or(0), cell.row_id.unwrap_or(0));
+            match cell.left_child_page_number {
+                Some(left_child_page_number) => print!("cell.left_child_page_number: {} ", left_child_page_number),
+                None => (),
+            };
+            match cell.row_id {
+                Some(row_id) => print!("cell.row_id: {} ", row_id),
+                None => (),
+            }
         }
         print!("\n");
 

@@ -1,14 +1,7 @@
-#![feature(destructuring_assignment)]
-
-mod components;
-mod utils;
-
 use std::io::prelude::*;
 use std::io::SeekFrom;
 use std::fs::File;
 use std::convert::TryInto;  
-
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 
 use sqlite_database_file_dissect::components::database_header::DatabaseHeader;
 use sqlite_database_file_dissect::utils::convert::TryFromBytes;
@@ -19,6 +12,7 @@ fn travel_btree_page(f: &mut File,
                      page_index: usize, 
                      buffer: &mut [u8], 
                      page_parents: &mut Vec<i32>, 
+                     pages: &mut Vec<Page>,
                      btree_id: usize, 
                      btree_level: usize) {
     if page_parents[page_index] == -100{
@@ -62,6 +56,7 @@ fn travel_btree_page(f: &mut File,
                                                 (left_child_page_number -1).try_into().unwrap(), 
                                                 buffer, 
                                                 page_parents, 
+                                                pages,
                                                 btree_id, 
                                                 btree_level +1),
             None => (),
@@ -75,15 +70,16 @@ fn travel_btree_page(f: &mut File,
                                                        (right_most_pointer -1) as usize, 
                                                        buffer, 
                                                        page_parents, 
+                                                       pages,
                                                        btree_id, 
                                                        btree_level +1),
         None => (),
     }
 
+    pages.push(page);
 }
 
-#[get("/btree_hierachy")]
-async fn btree_hierachy() -> impl Responder{
+fn main(){
 
     let mut f = File::open("test-data/Chinook.db.4.analyze").unwrap();
     const PAGE_SIZE: usize = 4096;
@@ -91,6 +87,7 @@ async fn btree_hierachy() -> impl Responder{
     let f_length: usize = f.metadata().unwrap().len().try_into().unwrap();
     let page_num: usize = f_length/PAGE_SIZE;
     let mut page_parents: Vec<i32>  = Vec::with_capacity(page_num);
+    let mut pages: Vec<Page> = Vec::with_capacity(page_num);
 
     for _ in 0..page_num {
         page_parents.push(-100);
@@ -108,48 +105,12 @@ async fn btree_hierachy() -> impl Responder{
             page_index, 
             &mut buffer, 
             &mut page_parents, 
+            &mut pages,
             page_index,
             0);
     }
 
-    let r = serde_json::to_string_pretty(&page_parents).unwrap();
+    let r = serde_json::to_string_pretty(&pages).unwrap();
 
-    HttpResponse::Ok().body(r)
-}
-
-#[get("/btree_page/{page_index}")]
-async fn btree_page(web::Path(page_index): web::Path<usize>) -> impl Responder {
-    let mut f = File::open("test-data/Chinook.db.4.analyze").unwrap();
-    const PAGE_SIZE: usize = 4096;
-    let mut buffer: [u8; PAGE_SIZE] = [0; PAGE_SIZE];
-
-    let page_start_offset: u64 = (page_index * PAGE_SIZE).try_into().unwrap();
-    f.seek(SeekFrom::Start(page_start_offset)).unwrap();
-    let _r = f.read(&mut buffer);
-    let page_start_offset;
-
-    if page_index == 0 {
-        let _ = DatabaseHeader::try_from_be_bytes(&buffer[0..100]).unwrap();
-        page_start_offset = 100;
-    } else {
-        page_start_offset = 0;
-    } 
-
-    let page = Page::try_from_be_bytes(&buffer, Some(page_start_offset)).unwrap();
-
-    let r = serde_json::to_string_pretty(&page).unwrap();
-
-    HttpResponse::Ok().body(r)
-}
-
-#[actix_web::main]
-async fn main() -> std::io::Result<()>{
-    HttpServer::new(|| {
-        App::new()
-            .service(btree_hierachy)
-            .service(btree_page)
-    })
-    .bind("127.0.0.1:8080")?
-    .run()
-    .await
+    println!("{}", r);
 }

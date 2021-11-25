@@ -4,6 +4,21 @@ version = "0.1.0"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name="main"
+path="src/main.rs"
+
+[[bin]]
+name="http_main"
+path="src/http_main.rs"
+
+[[bin]]
+name="dump_json"
+path="src/dump_json.rs"
+
+[[bin]]
+name="dump"
+path="src/dump.rs"
 
 [dependencies]
 memmap = "0.7.0"
@@ -13,6 +28,13 @@ num = "0.4"
 num-traits = "0.2"
 num-derive = "0.3"
 sqlite_varint = "0.1.2"
+tinytemplate = "1.2.1"
+serde = "1.0.129"
+serde_json = "1.0.71"
+serde_derive = "1.0.129"
+actix-web = "3"
+clap = "2.33.3"
+lazy_static = "1.4.0"
 
 [profile.dev]
 opt-level = 0

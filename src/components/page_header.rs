@@ -4,11 +4,13 @@ use std::cmp::PartialEq;
 use num_derive::FromPrimitive;
 use num_derive::ToPrimitive;
 
+use serde_derive::Serialize;
+
 use crate::utils::error::MyError;
 use crate::utils::error::ErrorKind;
 use crate::utils::convert::TryFromBytes;
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive, Clone, Copy)]
+#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive, Clone, Copy, Serialize)]
 pub enum PageType {
     UnknowType = 0x00,
     IndexInteriorBtreePage = 0x02,
@@ -17,14 +19,14 @@ pub enum PageType {
     TableLeafBtreePage = 0x0d,
 } 
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct PageHeader {
     pub page_type: PageType,
     pub first_free_block_offset: u16,
     pub cell_number: u16,
     pub cell_content_area_offset: u16,
     pub fragmented_free_bytes: u8,
-    pub right_most_pointer: u32,
+    pub right_most_pointer: Option<u32>,
     pub length: usize,
 }
 
@@ -36,7 +38,7 @@ impl Default for PageHeader {
             cell_number: 0, 
             cell_content_area_offset: 0, 
             fragmented_free_bytes: 0, 
-            right_most_pointer: 0,
+            right_most_pointer: None,
             length: 0,
         } 
     }
@@ -54,7 +56,7 @@ impl Default for PageHeader {
      //fragmented_free_bytes
      let fragmented_free_bytes = value[7];
      //right_most_pointer
-     let right_most_pointer = 0;
+     let right_most_pointer = None;
 
      Ok(PageHeader{
          page_type,
@@ -73,7 +75,7 @@ impl Default for PageHeader {
      let mut page_header = try_from_be_8_bytes(&value_8_bytes).unwrap();
      //right_most_pointer
      let right_most_pointer = u32::try_from_be_bytes(&value[8..=11]).unwrap();
-     page_header.right_most_pointer = right_most_pointer;
+     page_header.right_most_pointer = Some(right_most_pointer);
      page_header.length = 12;
      Ok(page_header)
  }

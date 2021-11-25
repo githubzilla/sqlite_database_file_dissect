@@ -92,7 +92,45 @@ mod tests {
 
         assert!(false);
     }
+    
+    #[test]
+    fn test_page28(){
+        let mut f = File::open("test-data/Chinbook.db.4.analyze.28").unwrap();
+        let mut buffer: [u8; 4096] = [0; 4096];
+        // read the whole file
+        let _r = f.read(&mut buffer);
 
+        let page = Page::try_from_be_bytes(&buffer, None).unwrap();
+        println!("{:?}", page);
+
+        assert!(false);
+    }
+    
+    #[test]
+    fn test_page29(){
+        let mut f = File::open("test-data/Chinbook.db.4.analyze.29").unwrap();
+        let mut buffer: [u8; 4096] = [0; 4096];
+        // read the whole file
+        let _r = f.read(&mut buffer);
+
+        let page = Page::try_from_be_bytes(&buffer, None).unwrap();
+        println!("{:?}", page);
+
+        assert!(false);
+    }
+
+    #[test]
+    fn test_page30(){
+        let mut f = File::open("test-data/Chinbook.db.4.analyze.30").unwrap();
+        let mut buffer: [u8; 4096] = [0; 4096];
+        // read the whole file
+        let _r = f.read(&mut buffer);
+
+        let page = Page::try_from_be_bytes(&buffer, None).unwrap();
+        println!("{:?}", page);
+
+        assert!(false);
+    }
     #[test]
     fn test_page15(){
         let mut f = File::open("test-data/Chinbook.db.4.analyze.15").unwrap();

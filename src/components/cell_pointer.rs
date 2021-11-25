@@ -1,12 +1,13 @@
 use std::mem;
+use std::convert::TryFrom;
+
+use serde_derive::Serialize;
 
 use crate::utils::error::MyError;
 use crate::utils::error::ErrorKind;
 use crate::utils::convert::TryFromBytes;
 
-use std::convert::TryFrom;
-
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct CellPointer {
     pub offset: u16,
 }

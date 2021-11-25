@@ -1,3 +1,5 @@
+use serde_derive::Serialize;
+
 use crate::components::page_header::PageType;
 use crate::components::record::Record;
 use crate::utils::convert::TryFromBytes;
@@ -5,7 +7,7 @@ use crate::utils::error::MyError;
 use crate::utils::error::ErrorKind;
 use crate::utils::varint::decode_varint_to_usize;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Cell {
     pub page_type: PageType,
     pub left_child_page_number: Option<u32>,

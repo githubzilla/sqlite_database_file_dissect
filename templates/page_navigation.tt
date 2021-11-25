@@ -1,0 +1,70 @@
+let page_parents = [
+    {{ for parent in page_parents -}} 
+        {{ if not @last }} {parent}, {{ else }} {parent} {{ endif }}
+    {{- endfor }}
+    ];
+
+{{ for page in pages }}
+let page = \{
+    {{ with page.header as h }}
+    "header": \{
+       "page_type": { h.page_type }, 
+       "first_free_block_offset": { h.first_free_block_offset },
+       "cell_number": { h.cell_number },
+       "cell_content_area_offset": { h.cell_content_area_offset },
+       "fragmented_free_bytes": { h.fragmented_free_bytes },
+       "right_most_pointer": { h.right_most_pointer },
+    },
+    {{ endwith }}
+    "cell_pointers": [
+    {{ for cell_pointer in page.cell_pointers -}}
+        {{ if not @last }} {cell_pointer.offset}, {{ else }} {cell_pointer.offset} {{ endif }}
+    {{- endfor }}
+    ],
+    "cells": [
+    {{ for c in page.cells -}}
+        \{
+          {{ if c.page_type -}}
+          "page_type": {c.page_type},
+          {{- endif }}
+          {{ if c.left_child_page_number -}}
+          "left_child_page_number": {c.left_child_page_number},
+          {{- endif }}
+          {{ if c.row_id -}}
+          "row_id": {c.row_id},
+          {{- endif }}
+          {{ if c.payload_length -}}
+          "payload_length": {c.payload_length},
+          {{- endif }}
+          {{ if c.overflow_page_number -}}
+          "overflow_page_number": {c.overflow_page_number},
+          {{- endif }}
+          {{ if c.overflow_length -}}
+          "overflow_length": {c.overflow_length},
+          {{- endif }}
+          {{ if c.payload -}} 
+          {{ with c.payload as r -}}
+          "payload": \{ 
+                "header_length": {r.header_length}
+                {{ if r.serial_types -}}
+                "serial_types": [
+                   {{ for st in r.serial_types -}}
+                   {{ if not @last }} {st | serial_type}, {{ else }} {st | serial_type} {{ endif }}
+                   {{- endfor }}
+                ],
+                {{- endif }}
+                {{ if r.columns -}}
+                "columns": [
+                   {{ for col in r.columns -}}
+                   {{ if not @last }} {col | serial_type}, {{ else }} {col | serial_type} {{ endif }}
+                   {{- endfor }}
+                ]
+
+                {{- endif }}
+          {{- endwith }}
+          {{- endif }}
+         }
+    {{- endfor }}
+    ]
+ }
+{{ endfor }}
