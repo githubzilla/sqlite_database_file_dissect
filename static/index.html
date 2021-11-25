@@ -1,0 +1,109 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
+    <link href="/static/jquery.json-viewer.css" type="text/css" rel="stylesheet">
+    <style>
+      .flex-container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+      
+        max-width: 800px;
+        margin: auto;
+      }
+      .flex-item {
+      
+        margin-top: -1px;
+        margin-left: -1px;
+        padding: 10px;
+        border: 1px solid #8c8c8c;
+        box-sizing: border-box;
+      }
+      .actived {
+        background: green;
+      }
+      .child {
+        background: red;
+      }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+    <script src="/static/jquery.json-viewer.js"></script>
+    <script>
+    $(document).ready(function() { 
+      $.get("/btree_hierachy", function(data){
+       let parents = JSON.parse(data);
+       let mode = 'visual';
+       var w = $(window).width();
+       var h = $(window).height();
+       let dialog = $( "#dialog" ).dialog({
+       	     autoOpen: false,
+             height: "auto",
+             width: "auto",
+             modal: true,
+       });
+       
+       for(var i=0; i<parents.length; i++){
+       	$( "div.flex-container" ).append('<div id='+i+' class="flex-item" title="page '+i+'"></div>');
+       }
+
+       $(document).tooltip({
+        items: "[title]",
+        content: function(){
+          return $(this).attr( "title" );
+        }
+       });
+       
+       $( "div.flex-item" ).on({
+         contextmenu: function(){
+           console.log($( this ).attr('id'));
+           if(mode == 'visual'){
+           	mode = 'insert';
+           }else{
+           	mode = 'visual'
+           }
+           return false;
+         },
+         click: function() {
+            let id = $(this).attr("id");
+            let page_num = parseInt(id);
+            $.get("/btree_page/"+page_num, function(data){
+               $('#dialog-page-num').text("page: "+page_num);
+               $('#dialog-json-renderer').jsonViewer(JSON.parse(data));
+               dialog.dialog("open");
+            });
+         }, mouseenter: function() { 
+           let id = $( this ).attr('id');
+           if(mode != 'visual') return;
+           $( this ).addClass( "actived" );
+           parents.forEach((p, idx) => {
+           	if(p == id){
+             	$( "#"+idx ).toggleClass( "child" );
+             }
+           });
+         }, mouseleave: function() {
+           let id = $( this ).attr('id');
+           if(mode != 'visual') return;
+           $( this ).removeClass( "actived" );
+           parents.forEach((p, idx) => {
+           	if(p == id){
+             	$( "#"+idx ).removeClass( "child" );
+             }
+           });
+         }
+       });
+
+    });
+
+      });
+    </script>
+  </head>
+  <body>
+    <div id="dialog" title="page data">
+      <p id="dialog-page-num"></p>
+      <pre id="dialog-json-renderer"></pre>
+    </div>
+    <div class="flex-container">
+    </div>  
+  </body>
+</html>

@@ -9,10 +9,10 @@ use std::fs::File;
 use std::convert::TryInto;  
 
 use actix_web::{get, web, App as WebApp, HttpResponse, HttpServer, Responder};
+use actix_files as fs;
 use clap::{Arg, App as ClapApp};
 use serde_json::json;
 use lazy_static::*;
-use sqlite_database_file_dissect::components::database_header;
 use std::sync::Mutex;
 use std::sync::MutexGuard;
 
@@ -151,7 +151,7 @@ async fn btree_page(web::Path(page_index): web::Path<usize>) -> impl Responder {
     let f_length: usize = f.metadata().unwrap().len().try_into().unwrap();
     let page_num: usize = f_length/page_size;
 
-    if page_index <= 0 || page_index > page_num {
+    if page_index < 0 || page_index > page_num {
         let r = serde_json::to_string(
             &HttpError::new(HttpErrorKind::PageIndexError(page_index))
         ).unwrap();
@@ -210,6 +210,7 @@ async fn main() -> std::io::Result<()>{
 
     HttpServer::new(|| {
         WebApp::new()
+            .service(fs::Files::new("/static", "./static").show_files_listing())
             .service(btree_hierachy)
             .service(btree_page)
             .service(btree_page_num)
