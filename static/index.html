@@ -3,6 +3,12 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
     <link href="/static/jquery.json-viewer.css" type="text/css" rel="stylesheet">
     <style>
+      .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 50px;
+      }
       .flex-container {
         display: flex;
         flex-direction: row;
@@ -53,6 +59,16 @@
           return $(this).attr( "title" );
         }
        });
+
+       $('#database-header').on({
+         click: function(){
+            $.get("/database_header", function(data){
+                $("#dialog-page-num").text("database header");
+                $("#dialog-json-renderer").jsonViewer(JSON.parse(data));
+                dialog.dialog("open");
+            });
+         }
+       });
        
        $( "div.flex-item" ).on({
          contextmenu: function(){
@@ -102,6 +118,9 @@
     <div id="dialog" title="page data">
       <p id="dialog-page-num"></p>
       <pre id="dialog-json-renderer"></pre>
+    </div>
+    <div class="center">
+        <button id="database-header">Database header</button>
     </div>
     <div class="flex-container">
     </div>  

@@ -1,3 +1,5 @@
+use serde_derive::Serialize;
+
 use num_derive::FromPrimitive;
 use num_derive::ToPrimitive;
 
@@ -5,13 +7,13 @@ use crate::utils::error::MyError;
 use crate::utils::error::ErrorKind;
 use crate::utils::convert::TryFromBytes;
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, FromPrimitive, ToPrimitive, Serialize)]
 pub enum FileFormatVersion {
     Legacy = 1,
     WAL = 2,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, FromPrimitive, ToPrimitive, Serialize)]
 pub enum SchemaFormatNumber {
     One = 1,
     Two = 2,
@@ -19,14 +21,14 @@ pub enum SchemaFormatNumber {
     Four = 4,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, FromPrimitive, ToPrimitive, Serialize)]
 pub enum TextEncoding {
     UTF8 = 1,
     UTF16le = 2,
     UTF16be = 3,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct DatabaseHeader {
     pub header_string: String,
     pub page_size: u16,

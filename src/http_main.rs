@@ -141,7 +141,18 @@ async fn btree_page_num() -> impl Responder {
     });
 
     HttpResponse::Ok().body(r)
-    
+}
+
+#[get("/database_header")]
+async fn fetch_database_header() -> impl Responder {
+    let mut f = File::open(SQLITE_DATABASE_FILE.lock().unwrap().as_ref().unwrap()).unwrap();
+    let mut buffer = vec![0 as u8; 100];
+    let _r = f.read(&mut buffer);
+    let database_header = DatabaseHeader::try_from_be_bytes(&buffer[0..100]).unwrap();
+
+    let r = serde_json::to_string(&database_header).unwrap();
+
+    HttpResponse::Ok().body(r)
 }
 
 #[get("/btree_page/{page_index}")]
@@ -214,6 +225,7 @@ async fn main() -> std::io::Result<()>{
             .service(btree_hierachy)
             .service(btree_page)
             .service(btree_page_num)
+            .service(fetch_database_header)
     })
     .bind("127.0.0.1:8080")?
     .run()
