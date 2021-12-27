@@ -8,7 +8,8 @@ Basically, it dissects sqlite database btree file, and visulize the btree node(p
 
 ## Visualize
 
-- Open http://127.0.0.1:8080/index.html
-- Move mouse around btree node(page), it show parent node in green, its children nodes in red.
+- Open http://127.0.0.1:8080/static/index.html
+- Move mouse around btree node(page), it shows parent node in green, and its children nodes in red.
 - Mouse left click to show node(page) content in json format.
-- Mouse right click to  
+- Mouse right click to freeze the page relation regardless mouse move.
+![](http://127.0.0.1:8080/static/index.html)
