@@ -14,4 +14,4 @@ Basically, it dissects sqlite database btree file, and visulize the btree node(p
 - Mouse right click to freeze the page relation regardless mouse move.
 
 ## Sample
-![Sample](static/sqllite_database_file_dissect.gif)
+![Sample](static/sqlite_database_file_dissect.gif)
